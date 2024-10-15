@@ -229,6 +229,10 @@ func GetPullRequest(ctx *context.APIContext) {
 		ctx.Error(http.StatusInternalServerError, "LoadHeadRepo", err)
 		return
 	}
+
+	// Consider API access a view for delayed checking.
+	pull_service.AddToTaskQueueOnView(ctx, pr)
+
 	ctx.JSON(http.StatusOK, convert.ToAPIPullRequest(ctx, pr, ctx.Doer))
 }
 
@@ -314,6 +318,10 @@ func GetPullRequestByBaseHead(ctx *context.APIContext) {
 		ctx.Error(http.StatusInternalServerError, "LoadHeadRepo", err)
 		return
 	}
+
+	// Consider API access a view for delayed checking.
+	pull_service.AddToTaskQueueOnView(ctx, pr)
+
 	ctx.JSON(http.StatusOK, convert.ToAPIPullRequest(ctx, pr, ctx.Doer))
 }
 
