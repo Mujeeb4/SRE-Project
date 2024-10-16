@@ -183,14 +183,13 @@ func applyMilestoneCondition(sess *xorm.Session, opts *IssuesOptions) {
 }
 
 func applyProjectCondition(sess *xorm.Session, opts *IssuesOptions) {
-	if opts.ProjectID > 0 { // specific project
-		sess.Join("INNER", "project_issue", "issue.id = project_issue.issue_id").
-			And("project_issue.project_id=?", opts.ProjectID)
-	} else if opts.ProjectID == db.NoConditionID { // show those that are in no project
-		sess.And(builder.NotIn("issue.id", builder.Select("issue_id").From("project_issue").And(builder.Neq{"project_id": 0})))
-	} else if len(opts.ProjectIDs) > 0 { // specific project
-		sess.Join("INNER", "project_issue", "issue.id = project_issue.issue_id").
-			In("project_issue.project_id", opts.ProjectIDs)
+	if len(opts.ProjectIDs) > 0 { // specific project
+		if opts.ProjectIDs[0] == db.NoConditionID { // show those that are in no project
+			sess.And(builder.NotIn("issue.id", builder.Select("issue_id").From("project_issue").And(builder.Neq{"project_id": 0})))
+		} else {
+			sess.Join("INNER", "project_issue", "issue.id = project_issue.issue_id").
+				In("project_issue.project_id", opts.ProjectIDs)
+		}
 	}
 	// opts.ProjectID == 0 means all projects,
 	// do not need to apply any condition
